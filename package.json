@@ -1,0 +1,48 @@
+{
+  "name": "vet-clinic",
+  "version": "1.0.0",
+  "description": "Veterinary clinic management desktop app (Turkish / English)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:mac": "electron-builder --mac"
+  },
+  "keywords": [],
+  "author": "Omer Zelka",
+  "license": "ISC",
+  "dependencies": {
+    "docx": "^9.7.1",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "electron": "^42.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.vetclinic.app",
+    "productName": "VetClinic",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.js",
+      "i18n.js",
+      "styles.css",
+      "logo.png",
+      "logo.ico",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "logo.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "logo.png"
+    }
+  }
+}

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Vet Clinic</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <img src="logo.png" class="header-logo" alt="">
+      <div>
+        <div class="header-title" id="header-title"></div>
+        <div class="header-subtitle" data-i18n="app.subtitle"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="tabs">
+        <button class="tab active" data-tab="islemler" data-i18n="tab.islemler"></button>
+        <button class="tab" data-tab="randevular" data-i18n="tab.randevular"></button>
+        <button class="tab" data-tab="bildirimler" id="tab-bildirimler"><span data-i18n="tab.bildirimler"></span> <span class="tab-badge" id="bildirim-sayisi"></span></button>
+      </div>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button class="lang-btn" data-lang="tr" onclick="dilDegistir('tr')">TR</button>
+        <button class="lang-btn" data-lang="en" onclick="dilDegistir('en')">EN</button>
+      </div>
+      <button class="icon-btn" onclick="ayarlarAc()" data-i18n-title="common.settings">&#9881;</button>
+    </div>
+  </div>
+
+  <!-- Bildirim Paneli -->
+  <div class="bildirim-panel" id="bildirim-panel"></div>
+
+  <div class="content">
+
+  <!-- İŞLEMLER -->
+  <div class="page active" id="page-islemler">
+    <div class="toolbar">
+      <input type="text" id="ara" data-i18n-placeholder="islem.search">
+      <button class="btn btn-gold" onclick="formAc()" data-i18n="islem.new"></button>
+      <button class="btn btn-primary" onclick="wordAktar()">&#128196; <span data-i18n="islem.export"></span></button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th class="sortable" id="th-tarih"><span data-i18n="col.tarih"></span> &#9650;&#9660;</th>
+          <th data-i18n="col.sahip"></th>
+          <th data-i18n="col.telefon"></th>
+          <th data-i18n="col.hayvan"></th>
+          <th data-i18n="col.tur"></th>
+          <th data-i18n="col.hastalik"></th>
+          <th data-i18n="col.islem"></th>
+          <th data-i18n="col.ucret"></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <p class="empty" id="empty" data-i18n="islem.empty"></p>
+  </div>
+
+  <!-- RANDEVULAR -->
+  <div class="page" id="page-randevular">
+    <div class="toolbar">
+      <select id="randevu-filtre" onchange="randevulariYukle()">
+        <option value="tumu" data-i18n="randevu.filterAll"></option>
+        <option value="bekliyor" selected data-i18n="randevu.filterPending"></option>
+        <option value="tamamlandi" data-i18n="randevu.filterDone"></option>
+        <option value="iptal" data-i18n="randevu.filterCancelled"></option>
+      </select>
+      <button class="btn sortable-btn" onclick="randevuSiralaToggle()"><span data-i18n="col.tarih"></span> &#9650;&#9660;</button>
+      <button class="btn btn-gold" onclick="randevuFormAc()" data-i18n="randevu.new"></button>
+      <button class="btn btn-whatsapp-bulk" onclick="topluHatirlatmaGonder()">&#128172; <span data-i18n="randevu.bulkReminder"></span></button>
+      <button class="btn" onclick="kurallariGoster()" data-i18n="randevu.rules"></button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="col.tarih"></th>
+          <th data-i18n="col.saat"></th>
+          <th data-i18n="col.sahip"></th>
+          <th data-i18n="col.telefon"></th>
+          <th data-i18n="col.hayvan"></th>
+          <th data-i18n="col.aciklama"></th>
+          <th data-i18n="col.durum"></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="randevu-tbody"></tbody>
+    </table>
+    <p class="empty" id="randevu-empty" data-i18n="randevu.empty"></p>
+  </div>
+
+  <!-- BİLDİRİMLER -->
+  <div class="page" id="page-bildirimler">
+    <div class="toolbar">
+      <select id="bildirim-filtre" onchange="bildirimleriFiltrele()">
+        <option value="aktif" data-i18n="bildirim.filterActive"></option>
+        <option value="okunmus" data-i18n="bildirim.filterRead"></option>
+        <option value="tumu" data-i18n="bildirim.filterAll"></option>
+      </select>
+      <button class="btn" onclick="tumunuOkunduIsaretle()" data-i18n="bildirim.markAllRead"></button>
+      <button class="btn btn-danger" onclick="okunmuslariTemizle()" data-i18n="bildirim.clearRead"></button>
+    </div>
+    <div id="bildirim-liste-sayfa"></div>
+    <p class="empty" id="bildirim-empty" data-i18n="bildirim.empty"></p>
+  </div>
+
+  <!-- Kural Modal -->
+  <div class="overlay" id="kural-overlay">
+    <div class="modal" style="width:540px">
+      <div class="modal-head">
+        <h3 data-i18n="randevu.rules"></h3>
+        <button class="close" onclick="kuralKapat()">&times;</button>
+      </div>
+      <div style="padding:18px">
+        <p style="font-size:13px;color:#5a8a90;margin-bottom:14px" data-i18n="kural.info"></p>
+        <div id="kural-liste"></div>
+        <div style="border-top:1px solid #d0e2e5;margin-top:14px;padding-top:14px">
+          <h4 style="font-size:14px;margin-bottom:10px" data-i18n="kural.addTitle"></h4>
+          <div class="row">
+            <div class="field"><label data-i18n="kural.islem"></label><select id="k-islem"><option value="" data-i18n="common.select"></option></select></div>
+            <div class="field"><label data-i18n="kural.gun"></label><input type="number" id="k-gun" min="1" placeholder="180"></div>
+          </div>
+          <div class="field"><label data-i18n="col.aciklama"></label><input id="k-aciklama" data-i18n-placeholder="kural.descPlaceholder"></div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="kuralEkle()" data-i18n="common.add"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+
+  <!-- İşlem Modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title"></h3>
+        <button class="close" onclick="kapat()">&times;</button>
+      </div>
+      <form id="form" onsubmit="kaydet(event)">
+        <div class="row">
+          <div class="field">
+            <label data-i18n="col.sahip"></label>
+            <input id="f-sahip" list="sahip-liste" autocomplete="off">
+            <datalist id="sahip-liste"></datalist>
+          </div>
+          <div class="field">
+            <label><span data-i18n="col.telefon"></span> *</label>
+            <input id="f-tel" required>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label data-i18n="islem.hayvanAdi"></label>
+            <input id="f-hayvan">
+          </div>
+          <div class="field">
+            <label data-i18n="col.tur"></label>
+            <input id="f-tur" data-i18n-placeholder="islem.turPlaceholder">
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="col.hastalik"></label>
+          <div class="select-row">
+            <select id="f-hastalik">
+              <option value="" data-i18n="common.select"></option>
+            </select>
+            <button type="button" class="btn btn-sm" onclick="yeniHastalikEkle()">+</button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="hastalikSil()">-</button>
+          </div>
+        </div>
+        <div class="field">
+          <label><span data-i18n="col.islem"></span> *</label>
+          <div class="select-row">
+            <select id="f-islem" required>
+              <option value="" data-i18n="common.select"></option>
+            </select>
+            <button type="button" class="btn btn-sm" onclick="yeniTurEkle()">+</button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="turSil()">-</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label><span data-i18n="col.tarih"></span> *</label>
+            <input type="date" id="f-tarih" required>
+          </div>
+          <div class="field">
+            <label id="f-ucret-label"></label>
+            <input type="number" id="f-ucret" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="toggle-wrap" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <label class="toggle-switch">
+            <input type="checkbox" id="oto-randevu-toggle" onchange="otoToggleDegistir()">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="oto-randevu-label"></span>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" onclick="kapat()" data-i18n="common.cancel"></button>
+          <button type="submit" class="btn btn-primary" data-i18n="common.save"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Randevu Modal -->
+  <div class="overlay" id="randevu-overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="randevu-modal-title"></h3>
+        <button class="close" onclick="randevuKapat()">&times;</button>
+      </div>
+      <form id="randevu-form" onsubmit="randevuKaydet(event)">
+        <div class="row">
+          <div class="field">
+            <label data-i18n="col.sahip"></label>
+            <input id="r-sahip" list="r-sahip-liste" autocomplete="off">
+            <datalist id="r-sahip-liste"></datalist>
+          </div>
+          <div class="field">
+            <label><span data-i18n="col.telefon"></span> *</label>
+            <input id="r-tel" required>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="islem.hayvanAdi"></label>
+          <input id="r-hayvan">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label><span data-i18n="col.tarih"></span> *</label>
+            <input type="date" id="r-tarih" required>
+          </div>
+          <div class="field">
+            <label><span data-i18n="col.saat"></span> *</label>
+            <input type="time" id="r-saat" required>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="col.aciklama"></label>
+          <input id="r-aciklama" data-i18n-placeholder="randevu.reasonPlaceholder">
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" onclick="randevuKapat()" data-i18n="common.cancel"></button>
+          <button type="submit" class="btn btn-primary" data-i18n="common.save"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ayarlar Modal -->
+  <div class="overlay" id="ayar-overlay">
+    <div class="modal" style="width:440px">
+      <div class="modal-head">
+        <h3 data-i18n="ayar.title"></h3>
+        <button class="close" onclick="ayarlarKapat()">&times;</button>
+      </div>
+      <form id="ayar-form" onsubmit="ayarlarKaydet(event)">
+        <div class="field">
+          <label data-i18n="ayar.dil"></label>
+          <select id="a-dil">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="ayar.klinikAdi"></label>
+          <input id="a-klinik" maxlength="80">
+          <div class="hint" data-i18n="ayar.klinikAdiHint"></div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label data-i18n="ayar.ulkeKodu"></label>
+            <input id="a-ulke" inputmode="numeric" maxlength="4" placeholder="90">
+          </div>
+          <div class="field">
+            <label data-i18n="ayar.paraBirimi"></label>
+            <input id="a-para" maxlength="8" placeholder="TL / USD / EUR">
+          </div>
+        </div>
+        <div class="hint" data-i18n="ayar.ulkeKoduHint"></div>
+        <div class="actions">
+          <button type="button" class="btn" onclick="ayarlarKapat()" data-i18n="common.cancel"></button>
+          <button type="submit" class="btn btn-primary" data-i18n="common.save"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mini Input Dialog -->
+  <div class="overlay" id="mini-dialog-overlay">
+    <div class="modal" style="width:360px">
+      <div class="modal-head">
+        <h3 id="mini-dialog-baslik"></h3>
+        <button class="close" onclick="miniDialogKapat()">&times;</button>
+      </div>
+      <div style="padding:18px">
+        <div class="field">
+          <label id="mini-dialog-label"></label>
+          <input id="mini-dialog-input">
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" onclick="miniDialogKapat()" data-i18n="common.cancel"></button>
+          <button type="button" class="btn btn-primary" onclick="miniDialogOnayla()" data-i18n="common.add"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
