@@ -1,5 +1,6 @@
 {
   "name": "vet-clinic",
+  "productName": "VetClinic",
   "version": "1.0.0",
   "description": "Veterinary clinic management desktop app (Turkish / English)",
   "main": "main.js",
